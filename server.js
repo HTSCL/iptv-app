@@ -1,29 +1,24 @@
 const express = require("express");
-const bodyParser = require("body-parser");
+const axios = require("axios");
 const path = require("path");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.use(bodyParser.json());
+app.use(express.json());
 app.use(express.static("public"));
 
-let users = [];
+app.post("/api/login", async (req, res) => {
+  const { server, username, password } = req.body;
 
-app.post("/register", (req, res) => {
-  const { email, password } = req.body;
-  users.push({ email, password });
-  res.json({ success: true });
-});
+  try {
+    const response = await axios.get(
+      `${server}/player_api.php?username=${username}&password=${password}`
+    );
 
-app.post("/login", (req, res) => {
-  const { email, password } = req.body;
-  const user = users.find(u => u.email === email && u.password === password);
-
-  if (user) {
-    res.json({ success: true });
-  } else {
-    res.json({ success: false });
+    res.json(response.data);
+  } catch (error) {
+    res.status(400).json({ error: "Connexion impossible" });
   }
 });
 
